@@ -21,19 +21,17 @@ int check_MAC_format(char *s) {
                 return (-1);
         }
         return (0);
-    }
-    else if (x == 2 && y == 0 && z == 0){
+    } else if (x == 2 && y == 0 && z == 0) {
         if (ft_strlen(s) != 14)
             return (-1);
-        for (i = 0; s[i]; i++){
+        for (i = 0; s[i]; i++) {
             if (i == 4 || i == 9)
-                continue ;
+                continue;
             if (s[i] <= 47 || (s[i] >= 58 && s[i] <= 96) || s[i] >= 103)
                 return (-1);
         }
         return (0);
-    }
-    else
+    } else
         return (-1);
 }
 
@@ -70,24 +68,23 @@ int check_args(char **av) {
                 }
             }
         } else {
-            printf("av[i] = %s\n", av[i]);
             if (check_MAC_format(av[i]) != 0) {
                 i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n", av[i]) : printf(
                         "ft_malcolm: invalid target MAC address: (%s)\n", av[i]);
                 return (-1);
             }
         }
+        printf("addr list[1] = %s", hostent->h_name);
     }
     return (0);
 }
 
-int main(int ac, char **av) {
 
+int main(int ac, char **av) {
     if (ac != 5) {
         printf("Usage: ./ft_malcolm <source IP> <source mac address> <target IP> <target mac address>\n");
         return EXIT_FAILURE;
     } else {
-        (void) av;
         if (getuid() != 0) {
             printf("Usage: ./ft_malcolm <source IP> <source mac address> <target IP> <target mac address>"
                    " \nYou must be root or sudo user\n");
