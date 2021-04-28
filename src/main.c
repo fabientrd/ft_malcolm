@@ -1,4 +1,13 @@
 #include "../includes/ft_malcolm.h"
+#define _GNU_SOURCE     /* Afin d'avoir accès aux définitions de NI_MAXSERV et de  NI_MAXHOST */
+       #include <arpa/inet.h>
+       #include <sys/socket.h>
+       #include <netdb.h>
+       #include <ifaddrs.h>
+       #include <stdio.h>
+       #include <stdlib.h>
+       #include <unistd.h>
+       #include <linux/if_link.h>
 
 int check_MAC_format(char *s) {
     int i = 0;
@@ -35,8 +44,8 @@ int check_MAC_format(char *s) {
         return (-1);
 }
 
-int check_valid_IPv4(char *s) {
-    struct ifaddrs *ifaddr, *ifa;
+int check_valid_IPv4(char *str) {
+   /* struct ifaddrs *ifaddr, *ifa;
     int family;
     (void) s;
 
@@ -49,6 +58,63 @@ int check_valid_IPv4(char *s) {
     }
     freeifaddrs(ifaddr);
     return (0);
+    */
+	(void)str;
+    struct ifaddrs *ifaddr, *ifa;
+           int family, s, n;
+           char host[NI_MAXHOST];
+
+           if (getifaddrs(&ifaddr) == -1) {
+               perror("getifaddrs");
+               exit(EXIT_FAILURE);
+           }
+
+           /* Walk through linked list, maintaining head pointer so we
+              can free list later */
+
+           for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
+               if (ifa->ifa_addr == NULL)
+                   continue;
+
+               family = ifa->ifa_addr->sa_family;
+
+               /* Display interface name and family (including symbolic
+                  form of the latter for the common families) */
+
+               printf("%-8s %s (%d)\n",
+                      ifa->ifa_name,
+                      (family == AF_PACKET) ? "AF_PACKET" :
+                      (family == AF_INET) ? "AF_INET" :
+                      (family == AF_INET6) ? "AF_INET6" : "???",
+                      family);
+
+               /* For an AF_INET* interface address, display the address */
+
+               if (family == AF_INET || family == AF_INET6) {
+                   s = getnameinfo(ifa->ifa_addr,
+                           (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                                                 sizeof(struct sockaddr_in6),
+                           host, NI_MAXHOST,
+                           NULL, 0, NI_NUMERICHOST);
+                   if (s != 0) {
+                       printf("getnameinfo() failed: %s\n", gai_strerror(s));
+                       exit(EXIT_FAILURE);
+                   }
+
+                   printf("\t\taddress: <%s>\n", host);
+
+               } else if (family == AF_PACKET && ifa->ifa_data != NULL) {
+                   struct rtnl_link_stats *stats = ifa->ifa_data;
+
+                   printf("\t\ttx_packets = %10u; rx_packets = %10u\n"
+                          "\t\ttx_bytes   = %10u; rx_bytes   = %10u\n",
+                          stats->tx_packets, stats->rx_packets,
+                          stats->tx_bytes, stats->rx_bytes);
+               }
+           }
+
+           freeifaddrs(ifaddr);
+           exit(EXIT_SUCCESS);
 }
 
 int check_args(char **av) {
@@ -61,12 +127,12 @@ int check_args(char **av) {
                         "ft_malcolm: invalid target IP adress: (%s)\n", av[i]);
                 return (-1);
             } else {
-                if (check_valid_IPv4(av[i]) != 0) {
+              /*  if (check_valid_IPv4(av[i]) != 0) {
                     i == 1 ? printf("ft_malcolm: unknown source host address: (%s)\n", av[i]) : printf(
                             "ft_malcolm: unknown target host address: (%s)\n", av[i]);
                     return (-1);
-                }
-            }
+                } */
+	    }
         } else {
             if (check_MAC_format(av[i]) != 0) {
                 i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n", av[i]) : printf(
@@ -74,7 +140,6 @@ int check_args(char **av) {
                 return (-1);
             }
         }
-        printf("addr list[1] = %s", hostent->h_name);
     }
     return (0);
 }
@@ -93,6 +158,9 @@ int main(int ac, char **av) {
         if (check_args(av) != 0) {
             return EXIT_FAILURE;
         }
+	if (init_socket() != 0){
+	     	return EXIT_FAILURE;
+	}
     }
     return EXIT_SUCCESS;
 }

@@ -15,5 +15,6 @@
 # include <ifaddrs.h>
 
 int	main(int ac, char **av);
+int	init_socket();
 
 #endif

@@ -91,7 +91,7 @@ $(NAME): $(OBJ)
 
 ./%.o: ./%.c
 	@ printf "\033[1mCompilation de \033[31m%-20s\033[37m\ten \033[34m%-20s\033[0m 🔥\n" $< $@
-	@gcc -Wall -Werror -Wextra -o $@ -c $< -g
+	@gcc -Wall -Wextra -o $@ -c $< -g
 
 clean:
 	@rm -f $(OBJ)
