@@ -29,7 +29,8 @@ COLOR = echo
 CC_FLAGS = -Wall -Werror -Wextra -g
 
 SRC =	main.c \
-	socket.c \
+		arp_reception.c \
+		arp_reply.c
 
 OBJ = $(addprefix $(OBJ_PATH), $(SRC:.c=.o))
 
