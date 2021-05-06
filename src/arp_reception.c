@@ -122,6 +122,7 @@ int	finding_interface(){
 		printf("Found available interface: %s\n", ifa->ifa_name);
 		break ;
 	}
+	freeifaddrs(ifap);
 	return (1);
 }
 
@@ -139,9 +140,9 @@ int arp_reception(){
 	}
 	if ((sock_raw_fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) == -1)
 		perror("socket()");
-	printf("Waiting for data ..\n");
+	printf("Waiting for data ...\n");
 	while (1)
-	 {
+	{
 		bzero(buf, ETHER_ARP_PACKET_LEN);
 		recv_len = recvfrom(sock_raw_fd, buf,  ETHER_ARP_PACKET_LEN, 0, 0, 0);
 		if (recv_len > 0)
@@ -151,7 +152,7 @@ int arp_reception(){
 			/*  arp opcode 1 means arp request */
 			if (ntohs(arp_packet->arp_op) == 1)
 			{
-				if (arp_packet->arp_spa[3] == 254)
+				if (arp_packet->arp_spa[3] != 29)
 					continue ;
 				printf("An ARP Request has been broadcast on the network.\n");
 				printf("	IP address of the broadcast: ");
@@ -162,9 +163,10 @@ int arp_reception(){
 				printf("	MAC address of request: ");
 				for (i = 0; i < ETH_ALEN; i++){
 					printf("%02x", arp_packet->arp_sha[i]);
-					i + 1 == MAC_ADDR_LEN ? printf("\n") : printf(":");
+					i + 1 == ETHER_ADDR_LEN ? printf("\n") : printf(":");
 				}
 				printf("Now sending an ARP reply to the target address with spoof source, please wait ...\n");
+				break ;
 			}
 			
 		}
