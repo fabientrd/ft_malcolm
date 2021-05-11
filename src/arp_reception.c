@@ -132,7 +132,6 @@ int arp_reception(){
 	struct ether_arp	*arp_packet;
 	char				buf[ETHER_ARP_PACKET_LEN];
 	int					sock_raw_fd, recv_len, i;
-//	char ip_src[512];
 //
 	if (!(finding_interface())){
 		printf("No available interfaces found\nExiting !\n");
@@ -144,7 +143,7 @@ int arp_reception(){
 	while (1)
 	{
 		bzero(buf, ETHER_ARP_PACKET_LEN);
-		recv_len = recvfrom(sock_raw_fd, buf,  ETHER_ARP_PACKET_LEN, 0, 0, 0);
+		recv_len = recvfrom(sock_raw_fd, buf, ETHER_ARP_PACKET_LEN, 0, 0, 0);
 		if (recv_len > 0)
 		{
 			/*  Strip off the ether head */

@@ -158,12 +158,12 @@ int main(int ac, char **av) {
         if (check_args(av) != 0) {
             return EXIT_FAILURE;
         }
-		printf("Initializing Man In The Middle Attack\n");
+/*		printf("Initializing Man In The Middle Attack\n");
 		sleep(1);
 		if (arp_reception() != 0){
 			printf("Something went wrong during the ARP reception\n");
 			return EXIT_FAILURE;
-		}
+		}*/
 		if (arp_reply(av) != 0){
 			printf("Something went wrong during the ARP reply\n");
 			return EXIT_FAILURE;
