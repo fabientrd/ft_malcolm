@@ -65,7 +65,7 @@ int arp_reply(char **av){
 	memcpy(ether_frame, arphdr.target_mac, 6 * sizeof (uint8_t));
 	memcpy(ether_frame + 6, arphdr.sender_mac, 6 * sizeof (uint8_t));
 	ether_frame[12] = ETH_P_ARP / 256;
-	ether_frame[13] = ETH_P_ARP % 256; // => ether_frame[12] = 08 / ether_frame[13] = 06 pour correspondre avec le Type ARP.
+	ether_frame[13] = ETH_P_ARP % 256; // => ether_frame[12] = 08 / ether_frame[13] = 06 pour correspondre avec le ETH_P_ARP = 0x0806
 	memcpy(ether_frame + 14, &arphdr, 28 * sizeof (uint8_t));
 	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 	if(sock < 0){

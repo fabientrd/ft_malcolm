@@ -49,4 +49,5 @@ void fill_device(struct sockaddr_ll *device, uint8_t addr[]){
 //    device->sll_pkttype = 0; //PACKET_OTHERHOST
 	device->sll_halen = htons(6);
 	memcpy(device->sll_addr, addr, 6 * sizeof (uint8_t));
+	printf("sll_ifindex = %d\n", device->sll_ifindex);
 }
