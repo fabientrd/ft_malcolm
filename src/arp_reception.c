@@ -151,8 +151,6 @@ int arp_reception(){
 			/*  arp opcode 1 means arp request */
 			if (ntohs(arp_packet->arp_op) == 1)
 			{
-				if (arp_packet->arp_spa[3] != 29)
-					continue ;
 				printf("An ARP Request has been broadcast on the network.\n");
 				printf("	IP address of the broadcast: ");
 				for (i = 0; i < IP_ADDR_LEN; i++){

@@ -76,5 +76,7 @@ struct _arp_hdr {
 int	main(int ac, char **av);
 int	arp_reception();
 int arp_reply(char **av);
-
+void fill_arphdr(arp_hdr *arphdr, char **av);
+uint8_t hex_simple(char *s);
+void fill_device(struct sockaddr_ll *device, uint8_t addr[]);
 #endif

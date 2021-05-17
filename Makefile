@@ -30,7 +30,8 @@ CC_FLAGS = -Wall -Werror -Wextra -g
 
 SRC =	main.c \
 		arp_reception.c \
-		arp_reply.c
+		arp_reply.c \
+		fill.c
 
 OBJ = $(addprefix $(OBJ_PATH), $(SRC:.c=.o))
 

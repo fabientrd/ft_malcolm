@@ -1,52 +1,43 @@
 #include "../includes/ft_malcolm.h"
 
+int power(int i, int y){
+	int ret  = 1;
+
+	if (y == 0)
+		 return (ret);
+	while (y > 0){
+	ret *= i;
+	y--;
+	}
+	return (ret);
+}
+
 uint8_t hex_simple(char *s){
-	uint8_t ret1;
-	uint8_t ret2;
+	uint8_t ret = 0;
+	int i = 0;
+	int y = ft_strlen(s) - 1;
 
-	switch (s[0]){
-		case('a') : ret1 = 10 * 16; break ;
-		case('b') : ret1 = 11 * 16; break ;
-		case('c') : ret1 = 12 * 16; break ;
-		case('d') : ret1 = 13 * 16; break ;
-		case('e') : ret1 = 14 * 16; break ;
-		case('f') : ret1 = 15 * 16; break ;
-		default : ret1 = ((int)s[0] - 48) * 16;
+	while (i < (int)ft_strlen(s)){
+		if (s[i] == 'a')
+			ret += 10 * power(16, y);
+		else if (s[i] == 'b')
+			ret += 11 * power(16, y);
+		else if (s[i] == 'c')
+			ret += 12 * power(16, y);
+		else if (s[i] == 'd')
+			ret += 13 * power(16, y);
+		else if (s[i] == 'e')
+			ret += 14 * power(16, y);
+		else if (s[i] == 'f')
+			ret += 15 * power(16, y);
+		else
+			ret += ((int)s[i] - 48) * power(16, y);
+		i++;
+		y--;
 	}
-	switch (s[1]){
-		case('a') : ret2 = 10; break ;
-		case('b') : ret2 =  11; break ;
-		case('c') : ret2 = 12; break ;
-		case('d') : ret2 = 13; break ;
-		case('e') : ret2 = 14; break ;
-		case('f') : ret2 = 15; break ;
-		default : ret2 = (int)s[1] - 48;
-	}
-	return (ret1 + ret2);
+	return (ret);
 }
 
-void fill_arphdr(arp_hdr *arphdr, char **av){
-	(void)av;
-	char **arp_sha, **arp_spa, **arp_tha, **arp_tpa;
-	int i;
-
-	arp_spa = ft_strsplit(av[1], '.');
-	arp_tpa = ft_strsplit(av[3], '.');
-	arp_sha = ft_strsplit(av[2], ':');	arp_tha = ft_strsplit(av[4], ':');
-	arphdr->htype = htons(1);
-	arphdr->ptype = htons(ETH_P_IP);
-	arphdr->hlen = 6;
-	arphdr->plen = 4;
-	arphdr->opcode = htons(ARPOP_REPLY);
-	for (i = 0; i < MAC_ADDR_LEN; i++)
-		arphdr->sender_mac[i] = hex_simple(arp_sha[i]);
-	for (i = 0; i < IP_ADDR_LEN; i++)
-		arphdr->sender_ip[i] = ft_atoi(arp_spa[i]);
-	for (i = 0; i < MAC_ADDR_LEN; i++)
-		arphdr->target_mac[i] = hex_simple(arp_tha[i]);
-	for (i = 0; i < IP_ADDR_LEN; i++)
-		arphdr->target_ip[i] = ft_atoi(arp_tpa[i]);
-}
 
 int check_up_target(char *s){
 (void)s;
@@ -54,10 +45,11 @@ int check_up_target(char *s){
 }
 
 int arp_reply(char **av){
-	int sock;
+	int sock, bytes, frame_length;
 //	struct in_addr src_in_addr, targ_in_addr;
 	arp_hdr arphdr;
-//	uint8_t src_ip[4], src_mac[6], dst_mac[6], ether_frame[IP_MAXPACKET];
+	struct sockaddr_ll device;
+	uint8_t ether_frame[IP_MAXPACKET];
 //	struct ether_arp*arp_packet = NULL;
 //	struct sockaddr sa;
 
@@ -67,11 +59,24 @@ int arp_reply(char **av){
 		return (-1);
 	}
 	sleep(1);
+	fill_arphdr(&arphdr, av);
+	fill_device(&device, arphdr.sender_mac);
+	frame_length = 6 + 6 + 2 + 28; // 28 = ARP_HDRLEN
+	memcpy(ether_frame, arphdr.target_mac, 6 * sizeof (uint8_t));
+	memcpy(ether_frame + 6, arphdr.sender_mac, 6 * sizeof (uint8_t));
+	ether_frame[12] = ETH_P_ARP / 256;
+	ether_frame[13] = ETH_P_ARP % 256; // => ether_frame[12] = 08 / ether_frame[13] = 06 pour correspondre avec le Type ARP.
+	memcpy(ether_frame + 14, &arphdr, 28 * sizeof (uint8_t));
 	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 	if(sock < 0){
 		perror("socket()");
 		return (-1);
 	}
-	fill_arphdr(&arphdr, av);
+	bytes = sendto (sock, ether_frame, frame_length, 0, (struct sockaddr *)&device, sizeof(device));
+	if (bytes <= 0){
+		perror ("sendto() failed");
+		return (-1);
+	}
+	close(sock);
 	return (0);
 }
