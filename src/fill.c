@@ -12,6 +12,7 @@ int check_index(){
 		i++;
 		if (ft_strncmp(ifa->ifa_name, "lo", 2) == 0)
 			continue ;
+		printf("ifa_name = %s\n", ifa->ifa_name);
 		break ;
 	}
 	freeifaddrs(ifap);
@@ -30,7 +31,7 @@ void fill_arphdr(arp_hdr *arphdr, char **av){
 	arphdr->ptype = htons(ETH_P_IP); // 2048 for IP
 	arphdr->hlen = 6;
 	arphdr->plen = 4;
-	arphdr->opcode = htons(ARPOP_REPLY);
+	arphdr->opcode = htons(2);
 	for (i = 0; i < MAC_ADDR_LEN; i++)
 		arphdr->sender_mac[i] = hex_simple(arp_sha[i]);
 	for (i = 0; i < IP_ADDR_LEN; i++)
@@ -43,10 +44,11 @@ void fill_arphdr(arp_hdr *arphdr, char **av){
 
 void fill_device(struct sockaddr_ll *device, uint8_t addr[]){
 	device->sll_family = PF_PACKET;
-//	device->sll_protocol = htons(ETH_P_ARP);
+	device->sll_protocol = htons(ETH_P_IP);
 	device->sll_ifindex = check_index();
-//	device->sll_hatype = ARPHRD_ETHER;
-//    device->sll_pkttype = 0; //PACKET_OTHERHOST
+	device->sll_hatype = htons(ARPHRD_ETHER);
+    device->sll_pkttype = 0; //PACKET_OTHERHOST
 	device->sll_halen = htons(6);
 	memcpy(device->sll_addr, addr, 6 * sizeof (uint8_t));
+	printf("device addr = %x\n", device->sll_addr[3]);
 }

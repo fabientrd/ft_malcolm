@@ -46,13 +46,11 @@ int check_up_target(char *s){
 
 int arp_reply(char **av){
 	int sock, bytes, frame_length;
-//	struct in_addr src_in_addr, targ_in_addr;
 	arp_hdr arphdr;
 	struct sockaddr_ll device;
-	uint8_t ether_frame[IP_MAXPACKET];
-//	struct ether_arp*arp_packet = NULL;
-//	struct sockaddr sa;
+	uint8_t ether_frame[42];
 
+	printf("IP MAXPACKET = %d\n", IP_MAXPACKET);
 	printf("Initialization of the ARP reply\nCheck if the target IP (%s) is up, please wait ...\n", av[3]);
 	if (check_up_target(av[3]) != 0){
 		printf("Unknown host IP: %s\n", av[3]);
@@ -61,25 +59,27 @@ int arp_reply(char **av){
 	sleep(1);
 	fill_arphdr(&arphdr, av);
 	fill_device(&device, arphdr.sender_mac);
-	frame_length = 6 + 6 + 2 + 28; // 28 = ARP_HDRLEN
+	frame_length = 6 + 6 + 2 + 18 + 28; // 18 = PADDIND && 28 = ARP_HDRLEN
 	memcpy(ether_frame, arphdr.target_mac, 6 * sizeof (uint8_t));
 	memcpy(ether_frame + 6, arphdr.sender_mac, 6 * sizeof (uint8_t));
 	for (int i = 0; i < MAC_ADDR_LEN; i++)
-		printf("%d.", arphdr.sender_mac[i]);
+		printf("%x.", arphdr.sender_mac[i]);
 	ether_frame[12] = ETH_P_ARP / 256;
 	ether_frame[13] = ETH_P_ARP % 256; // => ether_frame[12] = 08 / ether_frame[13] = 06 pour correspondre avec le ETH_P_ARP = 0x0806
+	printf("\n");
 	memcpy(ether_frame + 14, &arphdr, 28 * sizeof (uint8_t));
+	for (int i = 0; i < 60; i++)
+		printf("%02x/", ether_frame[i]);
 	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 	if(sock < 0){
 		perror("socket() failed");
 		return (-1);
 	}
-	bytes = sendto (sock, ether_frame, frame_length, 0, (struct sockaddr *)&device, sizeof(device));
+	bytes = sendto(sock, ether_frame, frame_length, 0, (struct sockaddr *)&device, sizeof(device));
 	if (bytes <= 0){
-		perror ("sendto() failed");
+		perror("sendto() failed");
 		return (-1);
 	}
-	printf("0xff = %d\n", 0xff);
 	close(sock);
 	return (0);
 }
