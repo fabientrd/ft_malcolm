@@ -12,7 +12,6 @@ int check_index(){
 		i++;
 		if (ft_strncmp(ifa->ifa_name, "lo", 2) == 0)
 			continue ;
-		printf("ifa_name = %s\n", ifa->ifa_name);
 		break ;
 	}
 	freeifaddrs(ifap);
@@ -31,7 +30,7 @@ void fill_arphdr(arp_hdr *arphdr, char **av){
 	arphdr->ptype = htons(ETH_P_IP); // 2048 for IP
 	arphdr->hlen = 6;
 	arphdr->plen = 4;
-	arphdr->opcode = htons(2);
+	arphdr->opcode = htons(ARPOP_REPLY);
 	for (i = 0; i < MAC_ADDR_LEN; i++)
 		arphdr->sender_mac[i] = hex_simple(arp_sha[i]);
 	for (i = 0; i < IP_ADDR_LEN; i++)

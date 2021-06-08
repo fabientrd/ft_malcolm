@@ -48,7 +48,7 @@ int arp_reply(char **av){
 	int sock, bytes, frame_length;
 	arp_hdr arphdr;
 	struct sockaddr_ll device;
-	uint8_t ether_frame[42];
+	unsigned char ether_frame[60];
 
 	printf("IP MAXPACKET = %d\n", IP_MAXPACKET);
 	printf("Initialization of the ARP reply\nCheck if the target IP (%s) is up, please wait ...\n", av[3]);
@@ -60,6 +60,7 @@ int arp_reply(char **av){
 	fill_arphdr(&arphdr, av);
 	fill_device(&device, arphdr.sender_mac);
 	frame_length = 6 + 6 + 2 + 18 + 28; // 18 = PADDIND && 28 = ARP_HDRLEN
+	ft_bzero(ether_frame, 59);
 	memcpy(ether_frame, arphdr.target_mac, 6 * sizeof (uint8_t));
 	memcpy(ether_frame + 6, arphdr.sender_mac, 6 * sizeof (uint8_t));
 	for (int i = 0; i < MAC_ADDR_LEN; i++)
