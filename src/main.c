@@ -9,6 +9,11 @@
        #include <unistd.h>
        #include <linux/if_link.h>
 
+void handler(int sig){
+	printf("Program STOPPED, sig = %d\n", sig);
+	return ;
+}
+
 int check_MAC_format(char *s) {
     int i = 0;
     int x = 0;
@@ -159,6 +164,7 @@ int main(int ac, char **av) {
         }
 		printf("Initializing Man In The Middle Attack\n");
 		sleep(1);
+		signal(SIGINT, handler);
 		if (arp_reception() != 0){
 			printf("Something went wrong during the ARP reception\n");
 			return EXIT_FAILURE;
