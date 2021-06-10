@@ -135,8 +135,7 @@ int check_args(char **av) {
 	    }
         } else {
             if (check_MAC_format(av[i]) != 0) {
-                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n", av[i]) : printf(
-                        "ft_malcolm: invalid target MAC address: (%s)\n", av[i]);
+                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n", av[i]) : printf("ft_malcolm: invalid target MAC address: (%s)\n", av[i]);
                 return (-1);
             }
         }
@@ -160,10 +159,10 @@ int main(int ac, char **av) {
         }
 		printf("Initializing Man In The Middle Attack\n");
 		sleep(1);
-/*		if (arp_reception() != 0){
+		if (arp_reception() != 0){
 			printf("Something went wrong during the ARP reception\n");
 			return EXIT_FAILURE;
-		}*/
+		}
 		if (arp_reply(av) != 0){
 			printf("Something went wrong during the ARP reply\n");
 			return EXIT_FAILURE;

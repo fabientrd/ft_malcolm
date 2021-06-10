@@ -2,20 +2,40 @@
 
 int check_index(){
 	struct ifaddrs *ifap, *ifa;
-	int i = -1;
+	int i = 1;
 
 	if (getifaddrs(&ifap) != 0){
 		perror("getifaddrs()");
 		return (0);
 	}
 	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next){
-		i++;
-		if (ft_strncmp(ifa->ifa_name, "lo", 2) == 0)
+		if (ft_strncmp(ifa->ifa_name, "lo", 2) == 0){
+			i++;
 			continue ;
+		}
 		break ;
 	}
 	freeifaddrs(ifap);
 	return (i);
+}
+
+int check_family(){
+	struct ifaddrs *ifap, *ifa;
+	int i = 0;
+
+	if (getifaddrs(&ifap) != 0){
+		perror("getifaddrs()");
+		return (0);
+	}
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next){
+		if (ifa->ifa_addr->sa_family == AF_INET){
+			break ;
+		}
+		i++;
+	}
+	freeifaddrs(ifap);
+	return (i);
+
 }
 
 void fill_arphdr(arp_hdr *arphdr, char **av){
@@ -42,12 +62,11 @@ void fill_arphdr(arp_hdr *arphdr, char **av){
 }
 
 void fill_device(struct sockaddr_ll *device, uint8_t addr[]){
-	device->sll_family = PF_PACKET;
+	device->sll_family = AF_PACKET;
 	device->sll_protocol = htons(ETH_P_IP);
-	device->sll_ifindex = check_index();
+	device->sll_ifindex = check_family();
 	device->sll_hatype = htons(ARPHRD_ETHER);
     device->sll_pkttype = 0; //PACKET_OTHERHOST
 	device->sll_halen = htons(6);
 	memcpy(device->sll_addr, addr, 6 * sizeof (uint8_t));
-	printf("device addr = %x\n", device->sll_addr[3]);
 }
