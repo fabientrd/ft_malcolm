@@ -1,112 +1,18 @@
 #include "../includes/ft_malcolm.h"
 
+int inter;
+
+void handler(){
+	printf("\nThe program has been stopped correctly ... Exiting\n");
+	inter = 1;
+	return ;
+}
+
 void die(char *s)
 {
 	perror(s);
 	exit(1);
 }
-
-/*int	init_socket(){
-//WAITING FOR ARP REQUEST
-	int ret;
-	int broadcast = 1;
-	struct sockaddr_in si_me, si_other;
-	char buf[BUF_LEN];
-	int s, slen = sizeof(si_other), recvlen;
-
-	s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s == -1){
-		perror("socket");
-		close(s);
-		return (-1);
-	}
-	else{
-		ret = setsockopt(s, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
-		if (ret == -1){
-			perror("setsockopt");
-			close(s);
-			return (-1);
-		}
-		memset((char *) &si_me, 0, sizeof(si_me));
-		si_me.sin_family = AF_INET;
-		si_me.sin_port = htons(PORT);
-		si_me.sin_addr.s_addr = htonl(INADDR_ANY);
-		if( bind(s , (struct sockaddr*)&si_me, sizeof(si_me) ) == -1)
-			perror("bind");
-		while (1){
-		printf("Waiting for data...");
-		fflush(stdout);
-
-		//try to receive some data, this is a blocking call
-		if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, (int)&slen)) == -1)
-			perror("recvfrom()");
-		//print details of the client/peer and the data received
-		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-		printf("Data: %s\n" , buf);
-		}
-	}	
-	close(s);
-	return (0);
-
-struct sockaddr_in si_me, si_other;
-
-	int s, recv_len;
-	socklen_t slen = sizeof(si_other);
-	char buf[BUFLEN];
-
-	//create a UDP socket
-	if ((s=socket(AF_INET, SOCK_RAW, IPPROTO_UDP)) == -1)
-	{
-		die("socket");
-	}
-	on=1;
-	if(setsockopt(s,SOL_SOCKET,SO_BROADCAST,&on,sizeof(int))==-1)
-	{
-		perror("setsockopt SO_BROADCAST");
-		close(s);
-		return -1;
-	}
-
-	// zero out the structure
-	memset((char *) &si_me, 0, sizeof(si_me));
-
-	si_me.sin_family = AF_INET;
-	si_me.sin_port = htons(PORT);
-	si_me.sin_addr.s_addr = htons(INADDR_ANY);
-
-	//bind socket to port
-	if( bind(s , (struct sockaddr*)&si_me, sizeof(si_me) ) == -1)
-	{
-		die("bind");
-	}
-
-	//keep listening for data
-	while(1)
-	{
-		printf("Waiting for data...");
-		fflush(stdout);
-
-		//try to receive some data, this is a blocking call
-		if ((recv_len = recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &si_other, &slen)) == -1)
-		{
-			die("recvfrom()");
-		}
-
-		//print details of the client/peer and the data received
-		printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-		printf("Data: %s\n" , buf);
-
-		//now reply the client with the same data
-		if (sendto(s, buf, recv_len, 0, (struct sockaddr*) &si_other, slen) == -1)
-		{
-			die("sendto()");
-		}
-	}
-
-	close(s);
-	return 0;
-
-}*/
 
 int	finding_interface(){
 	
@@ -132,6 +38,7 @@ int arp_reception(){
 	struct ether_arp	*arp_packet;
 	char				buf[ETHER_ARP_PACKET_LEN];
 	int					sock_raw_fd, recv_len, i;
+	struct				timeval read_timeout;
 //
 	if (!(finding_interface())){
 		printf("No available interfaces found\nExiting !\n");
@@ -139,8 +46,12 @@ int arp_reception(){
 	}
 	if ((sock_raw_fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) == -1)
 		perror("socket()");
+	read_timeout.tv_sec = 0;
+	read_timeout.tv_usec = 10;
+	setsockopt(sock_raw_fd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
 	printf("Waiting for data ...\n");
-	while (1)
+	signal(SIGINT, handler);
+	while (inter == 0)
 	{
 		bzero(buf, ETHER_ARP_PACKET_LEN);
 		recv_len = recvfrom(sock_raw_fd, buf, ETHER_ARP_PACKET_LEN, 0, 0, 0);
@@ -169,6 +80,8 @@ int arp_reception(){
 		}
 	}
 	close(sock_raw_fd);
+	if (inter == 1)
+		return (1);
 	return (0);
 
 }

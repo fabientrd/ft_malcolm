@@ -46,7 +46,6 @@
  /*  IP address length */
 #define IP_ADDR_LEN 4
 #define MAC_ADDR_LEN 6
-
 typedef struct _arp_hdr arp_hdr;
 struct _arp_hdr {
   uint16_t htype;

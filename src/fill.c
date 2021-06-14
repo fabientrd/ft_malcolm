@@ -1,5 +1,23 @@
 #include "../includes/ft_malcolm.h"
 
+void free_addresses(char **sha, char **tha, char **spa, char **tpa){
+	int i = 0;
+
+	for (i = 0; sha[i] != NULL; i++)
+		free(sha[i]);
+	free(sha);
+	for (i = 0; tha[i] != NULL; i++)
+		free(tha[i]);
+	free(tha);
+	for (i = 0; spa[i] != NULL; i++)
+		free(spa[i]);
+	free(spa);
+	for (i = 0; tpa[i] != NULL; i++)
+		free(tpa[i]);
+	free(tpa);
+	return ;
+}
+
 int check_index(){
 	struct ifaddrs *ifap, *ifa;
 	int i = 1;
@@ -59,6 +77,7 @@ void fill_arphdr(arp_hdr *arphdr, char **av){
 		arphdr->target_mac[i] = hex_simple(arp_tha[i]);
 	for (i = 0; i < IP_ADDR_LEN; i++)
 		arphdr->target_ip[i] = ft_atoi(arp_tpa[i]);
+	free_addresses(arp_sha, arp_tha, arp_spa, arp_tpa);
 }
 
 void fill_device(struct sockaddr_ll *device, uint8_t addr[]){

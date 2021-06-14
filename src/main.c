@@ -9,10 +9,6 @@
        #include <unistd.h>
        #include <linux/if_link.h>
 
-void handler(int sig){
-	printf("Program STOPPED, sig = %d\n", sig);
-	return ;
-}
 
 int check_MAC_format(char *s) {
     int i = 0;
@@ -150,6 +146,8 @@ int check_args(char **av) {
 
 
 int main(int ac, char **av) {
+	int ret;
+
     if (ac != 5) {
         printf("Usage: ./ft_malcolm <source IP> <source mac address> <target IP> <target mac address>\n");
         return EXIT_FAILURE;
@@ -164,8 +162,9 @@ int main(int ac, char **av) {
         }
 		printf("Initializing Man In The Middle Attack\n");
 		sleep(1);
-		signal(SIGINT, handler);
-		if (arp_reception() != 0){
+		if ((ret = arp_reception()) != 0){
+			if (ret == 1)
+				return EXIT_SUCCESS;
 			printf("Something went wrong during the ARP reception\n");
 			return EXIT_FAILURE;
 		}
