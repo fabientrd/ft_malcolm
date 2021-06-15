@@ -78,4 +78,5 @@ int arp_reply(char **av);
 void fill_arphdr(arp_hdr *arphdr, char **av);
 uint8_t hex_simple(char *s);
 void fill_device(struct sockaddr_ll *device, uint8_t addr[]);
+void display(unsigned char *frame);
 #endif

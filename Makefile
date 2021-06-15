@@ -14,7 +14,7 @@
 .PHONY: all re clean fclean
 
 NAME = ft_malcolm
-HEADER = minishell.h
+HEADER = ft_malcolm.h
 SRC_PATH = ./src/
 OBJ_PATH = ./obj/
 LIBFT_PATH = ./libft/
@@ -31,7 +31,8 @@ CC_FLAGS = -Wall -Werror -Wextra -g
 SRC =	main.c \
 		arp_reception.c \
 		arp_reply.c \
-		fill.c
+		fill.c \
+		utils.c
 
 OBJ = $(addprefix $(OBJ_PATH), $(SRC:.c=.o))
 

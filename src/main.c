@@ -120,11 +120,12 @@ int check_valid_IPv4(char *str) {
 
 int check_args(char **av) {
     struct hostent *hostent;
-
-    for (int i = 1; av[i]; i++) {
+    
+	for (int i = 1; av[i]; i++) {
         if (i == 1 || i == 3) {
             if ((hostent = gethostbyname(av[i])) == NULL) {
-                i == 1 ? printf("ft_malcolm: invalid source IP address: (%s)\n", av[i]) : printf(
+                i == 1 ? printf("ft_malcolm: invalid source IP address: (%s)\n",
+				av[i]) : printf(
                         "ft_malcolm: invalid target IP adress: (%s)\n", av[i]);
                 return (-1);
             } else {
@@ -136,7 +137,9 @@ int check_args(char **av) {
 	    }
         } else {
             if (check_MAC_format(av[i]) != 0) {
-                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n", av[i]) : printf("ft_malcolm: invalid target MAC address: (%s)\n", av[i]);
+                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n"
+				, av[i]) : printf("ft_malcolm: invalid target MAC address: (%s)\n",
+				av[i]);
                 return (-1);
             }
         }

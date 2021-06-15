@@ -37,7 +37,7 @@ int	finding_interface(){
 int arp_reception(){
 	struct ether_arp	*arp_packet;
 	char				buf[ETHER_ARP_PACKET_LEN];
-	int					sock_raw_fd, recv_len, i;
+	int					sock_raw_fd, recv_len;
 	struct				timeval read_timeout;
 //
 	if (!(finding_interface())){
@@ -61,18 +61,8 @@ int arp_reception(){
 			arp_packet = (struct ether_arp *)(buf + ETHER_HEADER_LEN);
 			/*  arp opcode 1 means arp request */
 			if (ntohs(arp_packet->arp_op) == 1)
-			{
-				printf("An ARP Request has been broadcast on the network.\n");
-				printf("	IP address of the broadcast: ");
-				for (i = 0; i < IP_ADDR_LEN; i++){
-					printf("%u", arp_packet->arp_spa[i]);
-					i + 1 == IP_ADDR_LEN ? printf("\n") : printf(".");
-				}
-				printf("	MAC address of request: ");
-				for (i = 0; i < ETH_ALEN; i++){
-					printf("%02x", arp_packet->arp_sha[i]);
-					i + 1 == ETHER_ADDR_LEN ? printf("\n") : printf(":");
-				}
+			{	
+				display((unsigned char *)buf);
 				printf("Now sending an ARP reply to the target address with spoof source, please wait ...\n");
 				break ;
 			}
