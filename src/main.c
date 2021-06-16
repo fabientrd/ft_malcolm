@@ -78,7 +78,6 @@ int check_subnet(char *av){
 
 int check_args(char **av) {
     struct hostent *hostent;
-//	int ret;
     
 	for (int i = 1; av[i]; i++) {
         if (i == 1 || i == 3) {
