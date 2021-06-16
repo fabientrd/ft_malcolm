@@ -1,23 +1,5 @@
 #include "../includes/ft_malcolm.h"
 
-void free_addresses(char **sha, char **tha, char **spa, char **tpa){
-	int i = 0;
-
-	for (i = 0; sha[i] != NULL; i++)
-		free(sha[i]);
-	free(sha);
-	for (i = 0; tha[i] != NULL; i++)
-		free(tha[i]);
-	free(tha);
-	for (i = 0; spa[i] != NULL; i++)
-		free(spa[i]);
-	free(spa);
-	for (i = 0; tpa[i] != NULL; i++)
-		free(tpa[i]);
-	free(tpa);
-	return ;
-}
-
 int check_index(){
 	struct ifaddrs *ifap, *ifa;
 	int i = 1;

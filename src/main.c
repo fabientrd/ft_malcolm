@@ -1,14 +1,4 @@
 #include "../includes/ft_malcolm.h"
-#define _GNU_SOURCE     /* Afin d'avoir accès aux définitions de NI_MAXSERV et de  NI_MAXHOST */
-       #include <arpa/inet.h>
-       #include <sys/socket.h>
-       #include <netdb.h>
-       #include <ifaddrs.h>
-       #include <stdio.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-       #include <linux/if_link.h>
-
 
 int check_MAC_format(char *s) {
     int i = 0;
@@ -45,101 +35,70 @@ int check_MAC_format(char *s) {
         return (-1);
 }
 
-int check_valid_IPv4(char *str) {
-   /* struct ifaddrs *ifaddr, *ifa;
-    int family;
-    (void) s;
+int	compare_subnet(char *s1, char *s2){
+	char **cmp1, **cmp2;
+	int i;
 
-    if (getifaddrs(&ifaddr) == -1)
-        return EXIT_FAILURE;
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL)
-            continue;
-        family = ifa->ifa_addr->sa_family;
-    }
-    freeifaddrs(ifaddr);
-    return (0);
-    */
-	(void)str;
-    struct ifaddrs *ifaddr, *ifa;
-           int family, s, n;
-           char host[NI_MAXHOST];
+	cmp1 = ft_strsplit(s1, '.');
+	cmp2 = ft_strsplit(s2, '.');
+	for (i = 0; i <= 2; i++){
+		if (ft_strcmp(cmp1[i], cmp2[i])){
+			free_subnet(cmp1, cmp2);
+			return (1);
+		}
+	}
+	free_subnet(cmp1, cmp2);
+	return (0);
+}
 
-           if (getifaddrs(&ifaddr) == -1) {
-               perror("getifaddrs");
-               exit(EXIT_FAILURE);
-           }
+int check_subnet(char *av){
+	struct ifaddrs *ifap, *ifa;
+	char host[NI_MAXHOST];
 
-           /* Walk through linked list, maintaining head pointer so we
-              can free list later */
-
-           for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
-               if (ifa->ifa_addr == NULL)
-                   continue;
-
-               family = ifa->ifa_addr->sa_family;
-
-               /* Display interface name and family (including symbolic
-                  form of the latter for the common families) */
-
-               printf("%-8s %s (%d)\n",
-                      ifa->ifa_name,
-                      (family == AF_PACKET) ? "AF_PACKET" :
-                      (family == AF_INET) ? "AF_INET" :
-                      (family == AF_INET6) ? "AF_INET6" : "???",
-                      family);
-
-               /* For an AF_INET* interface address, display the address */
-
-               if (family == AF_INET || family == AF_INET6) {
-                   s = getnameinfo(ifa->ifa_addr,
-                           (family == AF_INET) ? sizeof(struct sockaddr_in) :
-                                                 sizeof(struct sockaddr_in6),
-                           host, NI_MAXHOST,
-                           NULL, 0, NI_NUMERICHOST);
-                   if (s != 0) {
-                       printf("getnameinfo() failed: %s\n", gai_strerror(s));
-                       exit(EXIT_FAILURE);
-                   }
-
-                   printf("\t\taddress: <%s>\n", host);
-
-               } else if (family == AF_PACKET && ifa->ifa_data != NULL) {
-                   struct rtnl_link_stats *stats = ifa->ifa_data;
-
-                   printf("\t\ttx_packets = %10u; rx_packets = %10u\n"
-                          "\t\ttx_bytes   = %10u; rx_bytes   = %10u\n",
-                          stats->tx_packets, stats->rx_packets,
-                          stats->tx_bytes, stats->rx_bytes);
-               }
-           }
-
-           freeifaddrs(ifaddr);
-           exit(EXIT_SUCCESS);
+	if (getifaddrs(&ifap) != 0){
+		perror("getifaddrs()");
+		return (1);
+	}
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next){
+		if (ifa->ifa_addr->sa_family == AF_INET){
+			getnameinfo(ifa->ifa_addr, (ifa->ifa_addr->sa_family == AF_INET) 
+			? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6), host,
+			NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+			if (ft_strncmp(ifa->ifa_name, "lo", 2)){
+				if (compare_subnet(av, host)){
+					freeifaddrs(ifap);
+					return (1);
+				}
+			}
+		}
+	}
+	freeifaddrs(ifap);
+	return (0);
 }
 
 int check_args(char **av) {
     struct hostent *hostent;
+//	int ret;
     
 	for (int i = 1; av[i]; i++) {
         if (i == 1 || i == 3) {
             if ((hostent = gethostbyname(av[i])) == NULL) {
-                i == 1 ? printf("ft_malcolm: invalid source IP address: (%s)\n",
-				av[i]) : printf(
-                        "ft_malcolm: invalid target IP adress: (%s)\n", av[i]);
-                return (-1);
-            } else {
-              /*  if (check_valid_IPv4(av[i]) != 0) {
-                    i == 1 ? printf("ft_malcolm: unknown source host address: (%s)\n", av[i]) : printf(
-                            "ft_malcolm: unknown target host address: (%s)\n", av[i]);
-                    return (-1);
-                } */
-	    }
+					i == 1 ? printf("ft_malcolm: invalid source IP address:"
+					"(%s)\n" , av[i]) : printf("ft_malcolm: invalid target IP"
+					" address: (%s)\n", av[i]);
+				return (-1);
+            }
+			if (check_subnet(av[i])){
+				i == 1 ? printf("ft_malcolm: source IP address doesn't match"
+				" with the subnet\n") : printf("ft_malcolm: target IP address"
+				" doesn't match with the subnet\n") ;
+				return (-1);
+			}
         } else {
             if (check_MAC_format(av[i]) != 0) {
-                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)\n"
-				, av[i]) : printf("ft_malcolm: invalid target MAC address: (%s)\n",
-				av[i]);
+                i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)"
+				"\n", av[i]) : printf("ft_malcolm: invalid target MAC address:"
+				"(%s)\n", av[i]);
                 return (-1);
             }
         }
@@ -152,12 +111,13 @@ int main(int ac, char **av) {
 	int ret;
 
     if (ac != 5) {
-        printf("Usage: ./ft_malcolm <source IP> <source mac address> <target IP> <target mac address>\n");
+        printf("Usage: ./ft_malcolm <source IP> <source mac address>"
+		" <target IP> <target mac address>\n");
         return EXIT_FAILURE;
     } else {
         if (getuid() != 0) {
-            printf("Usage: ./ft_malcolm <source IP> <source mac address> <target IP> <target mac address>"
-                   " \nYou must be root or sudo user\n");
+            printf("Usage: ./ft_malcolm <source IP> <source mac address> <targ"
+			"et IP> <target mac address> \nYou must be root or sudo user\n");
             return EXIT_FAILURE;
         }
         if (check_args(av) != 0) {

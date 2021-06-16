@@ -1,44 +1,5 @@
 #include "../includes/ft_malcolm.h"
 
-int power(int i, int y){
-	int ret  = 1;
-
-	if (y == 0)
-		 return (ret);
-	while (y > 0){
-	ret *= i;
-	y--;
-	}
-	return (ret);
-}
-
-uint8_t hex_simple(char *s){
-	uint8_t ret = 0;
-	int i = 0;
-	int y = ft_strlen(s) - 1;
-
-	while (i < (int)ft_strlen(s)){
-		if (s[i] == 'a')
-			ret += 10 * power(16, y);
-		else if (s[i] == 'b')
-			ret += 11 * power(16, y);
-		else if (s[i] == 'c')
-			ret += 12 * power(16, y);
-		else if (s[i] == 'd')
-			ret += 13 * power(16, y);
-		else if (s[i] == 'e')
-			ret += 14 * power(16, y);
-		else if (s[i] == 'f')
-			ret += 15 * power(16, y);
-		else
-			ret += ((int)s[i] - 48) * power(16, y);
-		i++;
-		y--;
-	}
-	return (ret);
-}
-
-
 int arp_reply(char **av){
 	int sock, bytes, frame_length;
 	arp_hdr arphdr;

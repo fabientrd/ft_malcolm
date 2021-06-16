@@ -11,7 +11,7 @@
 # define ETH_ARP 0x0806
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
-//#include <linux/if_arp.h>
+#include <linux/if_link.h>
 
 # include "libft.h"
 # include <unistd.h>
@@ -46,8 +46,8 @@
  /*  IP address length */
 #define IP_ADDR_LEN 4
 #define MAC_ADDR_LEN 6
-typedef struct _arp_hdr arp_hdr;
-struct _arp_hdr {
+
+typedef struct  _arp_hdr {
   uint16_t htype;
   uint16_t ptype;
   uint8_t hlen;
@@ -57,26 +57,17 @@ struct _arp_hdr {
   uint8_t sender_ip[4];
   uint8_t target_mac[6];
   uint8_t target_ip[4];
-};
+}				arp_hdr;
 
-/*struct __attribute__((packed)) arp_header
-{
-    unsigned short arp_hd;
-    unsigned short arp_pr;
-    unsigned char arp_hdl;
-    unsigned char arp_prl;
-    unsigned short arp_op;
-    unsigned char arp_sha[6];
-    unsigned char arp_spa[4];
-    unsigned char arp_dha[6];
-    unsigned char arp_dpa[4];
-};*/
 
-int	main(int ac, char **av);
-int	arp_reception();
-int arp_reply(char **av);
-void fill_arphdr(arp_hdr *arphdr, char **av);
-uint8_t hex_simple(char *s);
-void fill_device(struct sockaddr_ll *device, uint8_t addr[]);
-void display(unsigned char *frame);
+int			main(int ac, char **av);
+int			arp_reception();
+int			arp_reply(char **av);
+void		fill_arphdr(arp_hdr *arphdr, char **av);
+uint8_t		hex_simple(char *s);
+int			power(int i, int y);
+void		fill_device(struct sockaddr_ll *device, uint8_t addr[]);
+void		display(unsigned char *frame);
+void		free_addresses(char **sha, char **tha, char **spa, char **tpa);
+void		free_subnet(char **s1, char **s2);
 #endif
