@@ -61,7 +61,7 @@ int arp_reception(){
 			arp_packet = (struct ether_arp *)(buf + ETHER_HEADER_LEN);
 			/*  arp opcode 1 means arp request */
 			if (ntohs(arp_packet->arp_op) == 1)
-			{	
+			{
 				display((unsigned char *)buf);
 				printf("Now sending an ARP reply to the target address with spoof source, please wait ...\n");
 				break ;
