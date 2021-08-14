@@ -76,9 +76,34 @@ int check_subnet(char *av){
 	return (0);
 }
 
+char *find_localhost(){
+	struct ifaddrs *ifap, *ifa;
+	char host[NI_MAXHOST];
+
+	if (getifaddrs(&ifap) != 0){
+		perror("getifaddrs()");
+		return (NULL);
+	}
+	for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next){
+		if (ifa->ifa_addr->sa_family == AF_INET){
+			getnameinfo(ifa->ifa_addr, (ifa->ifa_addr->sa_family == AF_INET) 
+			? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6), host,
+			NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+			if (ft_strncmp(ifa->ifa_name, "lo", 2)){
+					freeifaddrs(ifap);
+					return (ft_strdup(host));
+				}
+			}
+		}
+	freeifaddrs(ifap);
+	return (NULL);
+}
+
 int check_args(char **av) {
-    struct hostent *hostent;
-    
+    struct hostent	*hostent;
+	struct in_addr	**addr_list;
+	int				to_free = 0;
+	
 	for (int i = 1; av[i]; i++) {
         if (i == 1 || i == 3) {
             if ((hostent = gethostbyname(av[i])) == NULL) {
@@ -87,10 +112,19 @@ int check_args(char **av) {
 					" address: (%s)\n", av[i]);
 				return (-1);
             }
+			addr_list = (struct in_addr **) hostent->h_addr_list;
+			if (!ft_strncmp(inet_ntoa(*addr_list[0]), "127", 3)){
+				av[i] = find_localhost();
+				to_free = i == 1 ? to_free + 1 : to_free + 2;
+			}
+			else if (ft_strncmp(av[i], inet_ntoa(*addr_list[0]), ft_strlen(av[i])))
+				av[i] = inet_ntoa(*addr_list[0]);
 			if (check_subnet(av[i])){
 				i == 1 ? printf("ft_malcolm: source IP address doesn't match"
 				" with the subnet\n") : printf("ft_malcolm: target IP address"
-				" doesn't match with the subnet\n") ;
+				" doesn't match with the subnet\n");
+				if (to_free)
+					free_av(to_free, av);
 				return (-1);
 			}
         } else {
@@ -98,16 +132,19 @@ int check_args(char **av) {
                 i == 2 ? printf("ft_malcolm: invalid source MAC address: (%s)"
 				"\n", av[i]) : printf("ft_malcolm: invalid target MAC address:"
 				"(%s)\n", av[i]);
+				if (to_free)
+					free_av(to_free, av);
                 return (-1);
             }
         }
     }
-    return (0);
+    return (to_free);
 }
 
 
 int main(int ac, char **av) {
 	int ret;
+	int av_free;
 
     if (ac != 5) {
         printf("Usage: ./ft_malcolm <source IP> <source mac address>"
@@ -119,18 +156,22 @@ int main(int ac, char **av) {
 			"et IP> <target mac address> \nYou must be root or sudo user\n");
             return EXIT_FAILURE;
         }
-        if (check_args(av) != 0) {
+        if ((av_free = check_args(av)) == -1) {
             return EXIT_FAILURE;
         }
 		printf("Initializing Man In The Middle Attack\n");
-		sleep(1);
 		if ((ret = arp_reception()) != 0){
-			if (ret == 1)
+			if (ret == 1){
+				if (av_free)
+					free_av(av_free, av);
 				return EXIT_SUCCESS;
+			}
+			if (av_free)
+				free_av(av_free, av);
 			printf("Something went wrong during the ARP reception\n");
 			return EXIT_FAILURE;
 		}
-		if (arp_reply(av) != 0){
+		if (arp_reply(av, av_free) != 0){
 			printf("Something went wrong during the ARP reply\n");
 			return EXIT_FAILURE;
 		}

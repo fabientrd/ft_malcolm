@@ -1,6 +1,6 @@
 #include "../includes/ft_malcolm.h"
 
-int arp_reply(char **av){
+int arp_reply(char **av, int av_free){
 	int sock, bytes, frame_length;
 	arp_hdr arphdr;
 	struct sockaddr_ll device;
@@ -19,16 +19,22 @@ int arp_reply(char **av){
 	memcpy(ether_frame + 14, &arphdr, 28 * sizeof (uint8_t));
 	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP));
 	if(sock < 0){
+		if (av_free)
+			free_av(av_free, av);
 		perror("socket() failed");
 		return (-1);
 	}
 	bytes = sendto(sock, ether_frame, frame_length, 0, (struct sockaddr *)&device, sizeof(device));
 	if (bytes <= 0){
+		if (av_free)
+			free_av(av_free, av);
 		perror("sendto() failed");
 		return (-1);
 	}
 	close(sock);
 	display(ether_frame);
 	printf("Man In The Middle Attack Succeeded\n");
+	if (av_free)
+		free_av(av_free, av);
 	return (0);
 }

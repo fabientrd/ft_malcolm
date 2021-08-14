@@ -9,7 +9,19 @@ void free_subnet(char **s1, char **s2){
 	for (i = 0; s2[i] != NULL; i++)
 		free(s2[i]);
 	free(s2);
+	return ;
+}
 
+void free_av(int i, char **av){
+	if (i == 1)
+		free(av[1]);
+	else if (i == 2)
+		free(av[3]);
+	else{
+		free(av[1]);
+		free(av[3]);
+	}
+	return ;
 }
 
 void free_addresses(char **sha, char **tha, char **spa, char **tpa){

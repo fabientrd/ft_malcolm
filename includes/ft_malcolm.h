@@ -62,7 +62,7 @@ typedef struct  _arp_hdr {
 
 int			main(int ac, char **av);
 int			arp_reception();
-int			arp_reply(char **av);
+int			arp_reply(char **av, int av_free);
 void		fill_arphdr(arp_hdr *arphdr, char **av);
 uint8_t		hex_simple(char *s);
 int			power(int i, int y);
@@ -70,4 +70,5 @@ void		fill_device(struct sockaddr_ll *device, uint8_t addr[]);
 void		display(unsigned char *frame);
 void		free_addresses(char **sha, char **tha, char **spa, char **tpa);
 void		free_subnet(char **s1, char **s2);
+void		free_av(int i, char **av);
 #endif
