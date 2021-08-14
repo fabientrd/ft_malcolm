@@ -79,7 +79,7 @@ void display(unsigned char *frame){
 	frame[21] == 1 ? printf("(request)\n") : printf("(reply)\n");
 	printf("	MAC address of source: %02x:%02x:%02x:%02x:%02x:%02x\n", frame[22], frame[23], frame[24], frame[25], frame[26], frame[27]);
 	printf("	IP address of source: %d.%d.%d.%d\n", frame[28], frame[29], frame[30], frame[31]);
-	printf("	MAC address of target: %02x:%02x:%02x:%02x:%02x:%02x\n", frame[32], frame[33], frame[34], frame[35], frame[36], frame[37]);
+	frame[21] == 1 ? printf("	MAC address of target: ff:ff:ff:ff:ff:ff\n") : printf("	MAC address of target: %02x:%02x:%02x:%02x:%02x:%02x\n", frame[32], frame[33], frame[34], frame[35], frame[36], frame[37]);
 	printf("	IP address of target: %d.%d.%d.%d\n", frame[38], frame[39], frame[40], frame[41]);
 
 	return ;
